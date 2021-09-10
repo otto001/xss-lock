@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "xcb_utils.h"
+#include "xss_audio.h"
 
 #define LOGIND_SERVICE "org.freedesktop.login1"
 #define LOGIND_PATH    "/org/freedesktop/login1"
@@ -182,13 +183,17 @@ screensaver_event_cb(xcb_connection_t *connection, xcb_generic_event_t *event,
                  * work that way; I'm leaving this in anyway.
                  */
                 xcb_force_screen_saver(connection, XCB_SCREEN_SAVER_ACTIVE);
-            else if (!notifier.cmd || xss_event->forced) {
-                start_child(&locker);
-                logind_session_set_idle_hint(TRUE);
-            } else if (!locker.pid)
-                start_child(&notifier);
-            else
-                logind_session_set_idle_hint(TRUE);
+            else if (check_audio()) {
+                if (!notifier.cmd || xss_event->forced) {
+                    start_child(&locker);
+                    logind_session_set_idle_hint(TRUE);
+                } else if (!locker.pid) {
+                    start_child(&notifier);
+                } else {
+                    logind_session_set_idle_hint(TRUE);
+                }
+            }
+
             break;
         case XCB_SCREENSAVER_STATE_OFF:
             kill_child(&notifier);

@@ -23,6 +23,8 @@ add_executable(xss-lock
     xss-lock.c
     xcb_utils.c
     xcb_utils.h
+    xss_audio.c
+    xss_audio.h
     config.h
 )
 
